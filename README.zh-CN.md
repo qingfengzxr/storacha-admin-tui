@@ -32,7 +32,7 @@ STORACHA_LOGIN_EMAIL=you@example.com
 STORACHA_PROVIDER_DID=did:web:...
 ```
 
-`STORACHA_SERVICE_KEY` 为可选项。如果未提供，首次运行会自动生成
+上述配置都为可选项。如果未提供，首次运行会自动生成
 agent key 并保存在本地 profile 中。
 
 ## 运行

@@ -2,6 +2,8 @@
 
 A standalone Storacha admin terminal UI with space and file management tools.
 
+![alt text](image.png)
+
 ## Features
 
 - List spaces and view space usage
@@ -22,7 +24,9 @@ npm install
 
 ## Configure
 
-Create a `.env` file in the project root or export environment variables:
+Create a `.env` file in the project root or export environment variables. These
+environment variables are optional; if you do not set them, you can still log
+in through the normal flow:
 
 ```
 STORACHA_SERVICE_KEY=...
@@ -31,9 +35,6 @@ STORACHA_SERVICE_PROOF=...
 STORACHA_LOGIN_EMAIL=you@example.com
 STORACHA_PROVIDER_DID=did:web:...
 ```
-
-`STORACHA_SERVICE_KEY` is optional. If omitted, a new agent key is generated and
-stored in the local profile on first run.
 
 ## Run
 
