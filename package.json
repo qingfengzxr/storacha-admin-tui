@@ -1,0 +1,17 @@
+{
+  "name": "storacha-admin-tui",
+  "version": "0.1.0",
+  "description": "Standalone TUI admin for Storacha (based on storacha-admin.mjs)",
+  "type": "module",
+  "bin": {
+    "storacha-admin-tui": "src/index.mjs"
+  },
+  "scripts": {
+    "start": "node src/index.mjs"
+  },
+  "dependencies": {
+    "@storacha/client": "^1.8.26",
+    "blessed": "^0.1.81",
+    "multiformats": "^12.0.1"
+  }
+}
