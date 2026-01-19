@@ -8,7 +8,8 @@ import {
   deleteUpload,
   deleteBlob,
   listUploadsTui,
-  listBlobsTui
+  listBlobsTui,
+  reloginClient
 } from './actions.mjs';
 
 const showSpaces = async (client) => {
@@ -23,6 +24,7 @@ const showSpaces = async (client) => {
 };
 
 const runMainMenu = async (client, onExit) => {
+  let activeClient = client;
   while (true) {
     const idx = await tuiMenu('Storacha Admin', [
       'List spaces',
@@ -35,31 +37,37 @@ const runMainMenu = async (client, onExit) => {
       'Delete a blob (by shard CID or digest)',
       'List uploads (first page)',
       'List blobs (first page)',
+      'Logout and re-login',
       'Exit'
     ]);
     if (idx == null) continue;
 
     if (idx === 0) {
-      await showSpaces(client);
+      await showSpaces(activeClient);
     } else if (idx === 1) {
-      await showSpaceUsage(client);
+      await showSpaceUsage(activeClient);
     } else if (idx === 2) {
-      await listRateLimits(client);
+      await listRateLimits(activeClient);
     } else if (idx === 3) {
-      await purgeSpaceUploads(client, 'page');
+      await purgeSpaceUploads(activeClient, 'page');
     } else if (idx === 4) {
-      await purgeSpaceUploads(client, 'all');
+      await purgeSpaceUploads(activeClient, 'all');
     } else if (idx === 5) {
-      await purgeSpaceBlobs(client, 'all');
+      await purgeSpaceBlobs(activeClient, 'all');
     } else if (idx === 6) {
-      await deleteUpload(client);
+      await deleteUpload(activeClient);
     } else if (idx === 7) {
-      await deleteBlob(client);
+      await deleteBlob(activeClient);
     } else if (idx === 8) {
-      await listUploadsTui(client);
+      await listUploadsTui(activeClient);
     } else if (idx === 9) {
-      await listBlobsTui(client);
+      await listBlobsTui(activeClient);
     } else if (idx === 10) {
+      const nextClient = await reloginClient(activeClient);
+      if (nextClient) {
+        activeClient = nextClient;
+      }
+    } else if (idx === 11) {
       if (onExit) onExit();
       break;
     }

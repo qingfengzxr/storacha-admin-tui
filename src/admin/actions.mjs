@@ -134,34 +134,55 @@ const ensureAccountAccess = async (client) => {
   }
 };
 
-const createClient = async () => {
-  const key = process.env.STORACHA_SERVICE_KEY;
-  const principal = key ? Signer.parse(key) : undefined;
-  const profile = process.env.STORACHA_PROFILE || 'storacha-admin-tui';
-  const store = new StoreConf({ profile });
+const loadServiceProof = async (client) => {
+  const proof = process.env.STORACHA_SERVICE_PROOF;
+  if (!proof) return;
+  try {
+    const parsed = await Proof.parse(proof);
+    await client.addSpace(parsed);
+    console.log('[storacha-admin-tui] loaded STORACHA_SERVICE_PROOF');
+  } catch (err) {
+    console.warn(
+      '[storacha-admin-tui] failed to parse STORACHA_SERVICE_PROOF, ignoring:',
+      err?.message || err
+    );
+  }
+};
+
+const buildClient = async ({ store, principal } = {}) => {
   const options = principal ? { principal, store } : { store };
   const client = await createStorachaClient(options);
   agentInfo.did = client.agent.did();
-
-  const proof = process.env.STORACHA_SERVICE_PROOF;
-  if (proof) {
-    try {
-      const parsed = await Proof.parse(proof);
-      await client.addSpace(parsed);
-      console.log('[storacha-admin-tui] loaded STORACHA_SERVICE_PROOF');
-    } catch (err) {
-      console.warn(
-        '[storacha-admin-tui] failed to parse STORACHA_SERVICE_PROOF, ignoring:',
-        err?.message || err
-      );
-    }
-  }
-
+  await loadServiceProof(client);
   const accountIds = await ensureAccountAccess(client);
   if (Array.isArray(accountIds)) {
     agentInfo.accounts = accountIds;
   }
   return client;
+};
+
+const createClient = async () => {
+  const key = process.env.STORACHA_SERVICE_KEY;
+  const principal = key ? Signer.parse(key) : undefined;
+  const profile = process.env.STORACHA_PROFILE || 'storacha-admin-tui';
+  const store = new StoreConf({ profile });
+  return buildClient({ store, principal });
+};
+
+const reloginClient = async (client) => {
+  const confirm = await tuiConfirm(
+    'Relogin',
+    'This will clear stored account access and start a new login. Continue?'
+  );
+  if (!confirm) return null;
+
+  const profile = process.env.STORACHA_PROFILE || 'storacha-admin-tui';
+  const store = new StoreConf({ profile });
+  await store.reset();
+
+  const key = process.env.STORACHA_SERVICE_KEY;
+  const principal = key ? Signer.parse(key) : client?.agent?.issuer;
+  return buildClient({ store, principal });
 };
 
 const listSpaces = (client) => client.spaces?.() ?? [];
@@ -605,6 +626,7 @@ const listBlobsTui = async (client) => {
 
 export {
   createClient,
+  reloginClient,
   listSpaces,
   showSpaceUsage,
   listRateLimits,
